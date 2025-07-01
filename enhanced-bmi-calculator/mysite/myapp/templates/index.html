@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BMI Calculator</title>
+    <link rel="icon" href="static/image/bmi.gif" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <style>
+      body {
+        font-family: Verdana, Geneva, Tahoma, sans-serif;
+        background-color: #eaf6f6;
+        margin: 0;
+        padding: 0;
+      }
+      ::selection {
+        color: #4cae4c;
+        background-color: #333;
+      }
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        background: #ffffff;
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+      }
+
+      h1 {
+        text-align: center;
+        color: #3d5c51;
+      }
+      i {
+        color: black;
+      }
+
+      label {
+        display: block;
+        margin-top: 15px;
+        color: #444;
+        font-weight: bold;
+      }
+
+      input[type="text"],
+      input[type="number"] {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        box-sizing: border-box;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        background-color: #f0fff4;
+        color: #2e7d32;
+        font-weight: bold;
+        box-shadow: 0 2px 5px rgba(0, 128, 0, 0.1);
+        text-transform: capitalize;
+      }
+
+      .gender-options {
+        display: flex;
+        justify-content: space-between;
+        margin: 10px 0;
+      }
+
+      .gender-options label {
+        flex: 1;
+        text-align: center;
+        font-weight: bold;
+      }
+
+      button {
+        background-color: #5cb85c;
+        border: none;
+        color: white;
+        font-family: Georgia, "Times New Roman", Times, serif;
+        padding: 12px;
+        width: 100%;
+        font-size: 20px;
+        cursor: pointer;
+        border-radius: 5px;
+        margin-top: 20px;
+        transition: background-color 0.3s ease;
+      }
+
+      button:hover {
+        background-color: #4cae4c;
+      }
+
+      .results {
+        display: none;
+        margin-top: 30px;
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        background-color: #f2fbf2;
+        box-shadow: 0 4px 12px rgba(60, 179, 113, 0.2);
+      }
+
+      .results p {
+        font-size: 16px;
+        margin: 10px 0;
+      }
+
+      .suggestions {
+        margin-top: 15px;
+      }
+
+      .suggestion-item {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 20px;
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid #ccc;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .suggestion-item img {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 10px;
+        flex-shrink: 0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      .suggestion-item div p {
+        margin: 6px 0;
+        font-size: 14px;
+        color: #333;
+      }
+      .gif {
+        width: 50px;
+        height: 50px;
+        padding: 0;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>
+        BMI
+        <img class="gif" src="static/image/bmi.gif" alt="Your GIF" /> Calculator
+      </h1>
+      <form id="bmiForm">
+        <label>Name <input type="text" id="name" required /></label>
+        <label>Age <input type="number" id="age" required /></label>
+
+        <label>Gender</label>
+        <div class="gender-options">
+          <label
+            ><input type="radio" name="gender" value="Male" checked />
+            Male</label
+          >
+          <label
+            ><input type="radio" name="gender" value="Female" /> Female</label
+          >
+          <label
+            ><input type="radio" name="gender" value="Other" /> Other</label
+          >
+        </div>
+
+        <label>Height (cm) <input type="number" id="height" required /></label>
+        <label>Weight (kg) <input type="number" id="weight" required /></label>
+        <button type="button">Calculate BMI</button>
+      </form>
+
+      <div id="output" class="results">
+        <p><strong>BMI:</strong> <span id="bmiValue"></span></p>
+        <p><strong>Category:</strong> <span id="bmiCategory"></span></p>
+        <div id="suggestions" class="suggestions"></div>
+      </div>
+    </div>
+
+    <script>
+      document.querySelector("button").addEventListener("click", function () {
+        if (!validateForm()) return;
+
+        const height = parseFloat(document.getElementById("height").value);
+        const weight = parseFloat(document.getElementById("weight").value);
+        const bmi = (weight / (height / 100) ** 2).toFixed(2);
+        const category = getBMICategory(bmi);
+
+        document.getElementById("bmiValue").textContent = bmi;
+        document.getElementById("bmiCategory").textContent = category;
+        displaySuggestions(category);
+        document.getElementById("output").style.display = "block";
+      });
+
+      function validateForm() {
+        const name = document.getElementById("name").value.trim();
+        const age = document.getElementById("age").value;
+        const gender = document.querySelector('input[name="gender"]:checked');
+        const height = document.getElementById("height").value;
+        const weight = document.getElementById("weight").value;
+
+        if (!name || !age || !gender || !height || !weight) {
+          alert("Please fill in all fields.");
+          return false;
+        }
+
+        if (age < 1 || age > 120) {
+          alert("Please enter a valid age.");
+          return false;
+        }
+
+        if (height <= 0 || weight <= 0) {
+          alert("Height and weight must be positive numbers.");
+          return false;
+        }
+
+        return true;
+      }
+
+      function getBMICategory(bmi) {
+        bmi = parseFloat(bmi);
+        if (bmi < 18.5) return "Underweight";
+        else if (bmi <= 24.9) return "Normal";
+        else if (bmi <= 29.9) return "Overweight";
+        else return "Obese";
+      }
+
+      function displaySuggestions(category) {
+        const suggestionData = {
+          Underweight: [
+            {
+              goal: "Healthy weight gain with high-calorie, nutrient-dense foods",
+              description:
+                "Focus on high-protein, high-calorie meals with healthy fats. Eat frequently and include snacks.",
+              text: "Drink: Banana Milkshake",
+              img: "static/image/banana_milkshake.jpg",
+              text1: "(Creamy, high-calorie, and rich in potassium & carbs.)",
+            },
+            {
+              text: "Main Food: Chicken Biryani",
+              img: "static/image/chicken_biryani.jpg",
+              text1: "(Rich in calories, protein, and healthy fats.)",
+            },
+            {
+              text: "Snack: Peanut Butter on Toast",
+              img: "static/image/peanut.jpg",
+              text1: "(Healthy fats and protein to boost calories.)",
+            },
+          ],
+          Normal: [
+            {
+              goal: "Maintain healthy weight with balanced diet",
+              description:
+                "Eat a balanced mix of carbs, proteins, fats, and fiber. Avoid over-processing and added sugars.",
+              text: "Drink: Fresh Orange Juice",
+              img: "static/image/orange_juice.jpg",
+              text1: "(Natural vitamin C and antioxidants.)",
+            },
+            {
+              text: "Main Food: Vegetable Chapati Roll",
+              img: "static/image/vegetable_chapati_roll.jpg",
+              text1: "(Balanced carbs, protein, and fiber.)",
+            },
+            {
+              text: "Snack: Mixed Nuts & Fruits",
+              img: "static/image/mixed_nuts.png",
+              text1: "(Great for energy and essential fats.)",
+            },
+          ],
+          Overweight: [
+            {
+              goal: "Weight loss with low-calorie, high-fiber diet",
+              description:
+                "Include whole grains, lean proteins, and fiber-rich veggies. Reduce fried foods and sugar.",
+              text: "Drink: Lemon Detox Water",
+              img: "static/image/lemon_drink.png",
+              text1: "(Boosts metabolism and digestion.)",
+            },
+            {
+              text: "Main Food: Grilled Fish & Veggies",
+              img: "static/image/grilled_fish.jpg",
+              text1: "(High-protein, low-fat, satisfying meal.)",
+            },
+            {
+              text: "Snack: Roasted Chickpeas",
+              img: "static/image/roasted_chickpess.jpg",
+              text1: "(Crunchy, high in fiber and protein.)",
+            },
+          ],
+          Obese: [
+            {
+              goal: "Fat loss and calorie control with portioned meals",
+              description:
+                "Adopt strict portion control, avoid processed carbs. Focus on fresh veggies, lean protein & hydration.",
+              text: "Drink: Green Tea (No Sugar)",
+              img: "static/image/green_tea.jpg",
+              text1: "(Speeds up metabolism and fat burn.)",
+            },
+            {
+              text: "Main Food: Steamed Veggie Salad with Paneer",
+              img: "static/image/steemed_vegetable_salad.jpg",
+              text1: "(Low-carb, high-protein, nutrient-dense.)",
+            },
+            {
+              text: "Snack: Cucumber & Carrot Sticks with Hummus",
+              img: "static/image/cucumber_carrot_snack.png",
+              text1: "(Hydrating, fiber-rich and low-calorie.)",
+            },
+          ],
+        };
+
+        const name = document.getElementById("name").value.trim();
+        const container = document.getElementById("suggestions");
+        container.innerHTML = "";
+
+        // Greeting with user name and BMI category
+        const greeting = document.createElement("div");
+        greeting.innerHTML = `
+        <h3 style="color: #2e4053;">Hello, "<span style="color:#e67e22;">${name}</span>" here are your suggestions for <span style="color:#e67e22;">${category}</span> category:</h3>
+        <p style="margin-bottom: 20px;"><em>${suggestionData[category][0].goal}</em></p>
+        <p>${suggestionData[category][0].description}</p>
+      `;
+        container.appendChild(greeting);
+
+        // Show each suggestion
+        suggestionData[category].forEach((item) => {
+          const div = document.createElement("div");
+          div.className = "suggestion-item";
+          div.innerHTML = `
+          <img src="${item.img}" alt="Food Image">
+          <div>
+            <p><strong>${item.text}</strong></p>
+            <p>${item.text1}</p>
+          </div>
+        `;
+          container.appendChild(div);
+        });
+      }
+    </script>
+  </body>
+</html>
